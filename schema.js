@@ -1,13 +1,20 @@
 const Joi = require('joi');
 
 module.exports.listingSchema = Joi.object({
-    listing : Joi.object({
+    listing: Joi.object({
         title: Joi.string().required(),
         description: Joi.string().required(),
         location: Joi.string().required(),
         country: Joi.string().required(),
-        price: Joi.string().required().min(0),
-        image: Joi.string().allow("",null)
+        // Fixed: Price should be a number, not a string
+        price: Joi.number().required().min(0),
+        
+        // FIXED: Changed from .string() to .object()
+        // This matches your Mongoose Schema: image { filename, url }
+        image: Joi.object({
+            url: Joi.string().allow("", null),
+            filename: Joi.string().allow("", null)
+        }).allow("", null) 
     }).required(),
 });
 
