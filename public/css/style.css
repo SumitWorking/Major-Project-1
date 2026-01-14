@@ -148,3 +148,130 @@
     padding: 0 !important;
     border: none !important;
 }
+
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+/* Fixes a common issue where Leaflet icons don't show properly with Bootstrap */
+.leaflet-container {
+    z-index: 1;
+}
+
+#filters {
+    display: flex !important;
+    flex-direction: row !important; /* Forces horizontal alignment */
+    align-items: center;
+    flex-wrap: nowrap; /* Prevents them from jumping to the next line */
+    overflow-x: auto;  /* Adds a scrollbar if there are too many icons */
+}
+
+.filter {
+    text-align: center;
+    margin-right: 2rem;
+    margin-top: 1rem;
+    opacity: 0.7;
+}
+
+.filter:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.filter p {
+    font-size: 0.8rem;
+}
+
+.tax-toggle {
+    border: 1px solid #717171;
+    border-radius: 1rem;
+    height: 3.5rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Pushes it to the right */
+}
+
+.tax-info {
+    display: none; /* Hidden by default */
+}
+
+/* This class is what the JavaScript will "toggle" */
+.show-tax {
+    display: inline !important;
+    color: #fe424d;
+}
+
+/* Navbar general styling */
+.navbar {
+    height: 5rem;
+    background-color: white !important;
+}
+
+.nav-link {
+    color: #222222 !important;
+    font-size: 0.9rem;
+}
+
+/* Search Bar Container */
+.search-form {
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    padding: 0 5px 0 15px;
+    background-color: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    transition: 0.2s;
+}
+
+.search-form:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* Input field inside search */
+.search-input {
+    border: none !important;
+    padding: 0.5rem 0 !important;
+    font-size: 0.85rem;
+    width: 250px; /* Width of the search box */
+    box-shadow: none !important;
+}
+
+/* Search Button (The Red Circle) */
+.btn-search {
+    background-color: #fe424d; /* Wanderlust Theme Red */
+    color: white !important;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+    padding: 0;
+    border: none;
+}
+
+.btn-search:hover {
+    background-color: #d8353e;
+}
+
+.btn-search i {
+    font-size: 0.8rem;
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 768px) {
+    .search-form {
+        margin: 10px 0;
+        width: 100%;
+    }
+    .search-input {
+        width: 100%;
+    }
+}
+  

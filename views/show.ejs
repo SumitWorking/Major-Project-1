@@ -31,7 +31,19 @@
         <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
             <div class="mb-3">
                 <label for="rating" class="form-label">Rating</label>
-                <input type="range" min="1" max="5" id="rating" name="review[rating]" class="form-range">
+            <fieldset class="starability-slot">
+                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="0" checked aria-label="No rating." />
+                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                <label for="first-rate1" title="Terrible">1 star</label>
+                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                <label for="first-rate2" title="Not good">2 stars</label>
+                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                <label for="first-rate3" title="Average">3 stars</label>
+                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                <label for="first-rate4" title="Very good">4 stars</label>
+                <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                <label for="first-rate5" title="Amazing">5 stars</label>
+              </fieldset>
             </div>
             <div class="mb-3">
                 <label for="comment" class="form-label">Comments</label>
@@ -50,8 +62,8 @@
             <div class="card col-5 ms-3 mb-3">
                 <div class="card-body">
                     <h5 class="card-title">@<%= review.author.username %></h5>
+                    <p class="starability-result card-text"  data-rating="<%= review.rating %>"> Rated: 3 Star </p>
                     <p class="card-text"><%= review.comment %></p>
-                    <p class="card-text"><%= review.rating %> Stars</p>
                 </div>
                 <% if(currUser && review.author._id.equals(currUser._id)) { %>
                 <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="mb-3" method="POST">
@@ -63,4 +75,33 @@
         </div>
         <% } %>
     </div>
+    <div class="col-8 offset-3 mb-3">
+        <h3>Where you'll be</h3>
+        <div id="map" style="height: 400px; width: 100%; border-radius: 15px;"></div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Check if geometry and coordinates actually exist
+        <% if (listing.geometry && listing.geometry.coordinates && listing.geometry.coordinates.length === 2) { %>
+            const coords = <%- JSON.stringify(listing.geometry.coordinates) %>;
+
+            // Initialize map: Leaflet uses [lat, lng], MongoDB uses [lng, lat]
+            const map = L.map('map').setView([coords[1], coords[0]], 12);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            L.marker([coords[1], coords[0]])
+                .addTo(map)
+                .bindPopup("<b><%= listing.location %></b><br>Exact location provided after booking.")
+                .openPopup();
+        <% } else { %>
+            // Fallback if no coordinates exist
+            document.getElementById("map").innerHTML = "<p class='text-center mt-5'>Map location not available for this listing. Please update the location to see the map.</p>";
+            document.getElementById("map").style.backgroundColor = "#e9ecef";
+        <% } %>
+    });
+</script>

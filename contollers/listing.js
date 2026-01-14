@@ -28,13 +28,42 @@ module.exports.showListing = async (req, res) => {
     res.render("show.ejs", { listing });
 };
 
-// Save new listing to Database
+// Save new listing to Database with Geocoding
 module.exports.createListing = async (req, res) => {
-    const newListing = new Listing(req.body.listing);
-    newListing.owner = req.user._id; 
-    await newListing.save();
-    req.flash("success", "New Listing Created!");
-    res.redirect("/listings");
+  let url =  req.file.path;
+  let filename = req.file.filename;
+
+  const newListing = new Listing(req.body.listing);
+  newListing.owner = req.user._id; 
+  newListing.image = {url, filename};
+
+  // --- FREE GEOCODING LOGIC ---
+  try {
+    let location = req.body.listing.location;
+    let response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
+    );
+    let data = await response.json();
+
+    if (data && data.length > 0) {
+      // Nominatim returns [lat, lon], we save as [lon, lat] for GeoJSON standard
+      newListing.geometry = {
+        type: "Point",
+        coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+      };
+    } else {
+      // Default to [0,0] if location is not found to prevent crashes
+      newListing.geometry = { type: "Point", coordinates: [0, 0] };
+    }
+  } catch (err) {
+    console.error("Geocoding Error:", err);
+    newListing.geometry = { type: "Point", coordinates: [0, 0] };
+  }
+  // ----------------------------
+
+  await newListing.save();
+  req.flash("success", "New Listing Created!");
+  res.redirect("/listings");
 };
 
 // Render edit form
@@ -45,15 +74,46 @@ module.exports.editListing = async (req, res) => {
       req.flash("error", "Listing you requested for does not exist");
       return res.redirect("/listings");
     }
-    res.render("edit.ejs", { listing });
+    let originalImageUrl = listing.image.url;
+    originalImageUrl = originalImageUrl.replace("/upload","/upload/h_300,w_250")
+    res.render("edit.ejs", { listing, originalImageUrl });
 };
 
-// Update existing listing
+// Update existing listing with Geocoding
 module.exports.updateListing = async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-    req.flash("success", "Listing Updated!");
-    res.redirect(`/listings/${id}`);
+  let { id } = req.params;
+  
+  // Update text fields first
+  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+  // --- UPDATE COORDINATES IF LOCATION CHANGED ---
+  try {
+    let location = req.body.listing.location;
+    let response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
+    );
+    let data = await response.json();
+
+    if (data && data.length > 0) {
+      listing.geometry = {
+        type: "Point",
+        coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+      };
+    }
+  } catch (err) {
+    console.error("Geocoding Update Error:", err);
+  }
+  // ----------------------------------------------
+
+  if (typeof req.file !== "undefined") {
+    let url =  req.file.path;
+    let filename = req.file.filename;
+    listing.image = {url, filename};
+  }
+
+  await listing.save();
+  req.flash("success", "Listing Updated!");
+  res.redirect(`/listings/${id}`);
 };
 
 // Delete listing
